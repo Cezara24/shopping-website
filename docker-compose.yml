@@ -1,0 +1,52 @@
+version: "3.7"
+
+x-db_credentials:
+  - &db_name shopping_website_db
+  - &db_user admin
+  - &db_pass admin
+
+services:
+    
+    # python:
+    #     build:
+    #         context: .
+    #         dockerfile: docker/python/Dockerfile
+    #     restart: always
+    #     networks:
+    #         - default
+    #     volumes:
+    #         - .:/code
+    #     ports:
+    #         - 8000:5000
+
+    shopping_db:
+        # hostname: shopping.site.local
+        build:
+            context: docker/db
+        healthcheck:
+            test: /usr/bin/pg_isready
+            interval: 5s
+            timeout: 10s
+            retries: 120
+        restart: always
+        environment:
+            POSTGRES_DB: *db_name
+            PGUSER: *db_user
+            POSTGRES_USER: *db_user
+            POSTGRES_PASSWORD: *db_pass
+        volumes:
+            - shopping-db-data:/var/lib/postgresql/data
+        networks:
+            - default
+        ports:
+            - 8001:5432
+
+
+
+# networks:
+#     document-classifier.lan:
+#         driver: bridge
+#         name: document-classifier.lan
+        
+volumes:
+    shopping-db-data:

@@ -1,0 +1,11 @@
+$ sudo docker-compose down --volumes
+$ sudo docker-compose up -d --build
+
+/app
+$ export FLASK_APP=app.py
+$ flask run
+
+$ flask db init
+$ flask db migrate
+$ flask db upgrade
+
