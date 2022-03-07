@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
@@ -10,7 +10,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 
-class Products(db.Model):
+class Product(db.Model):
     __tablename__ = 'products'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
@@ -28,7 +28,7 @@ class Products(db.Model):
 
 @app.route('/products', methods=['GET'])
 def get_products_list():
-    products = Products.query.all()
+    products = Product.query.all()
     results = [
         {
             'name': product.name,
@@ -41,14 +41,38 @@ def get_products_list():
 
 @app.route('/product', methods=['POST'])
 def post_product():
-    # if request.is_json:
     data = request.get_json()
-    new_product = Products(name=data['name'], description=data['description'], price=data['price'])
+    new_product = Product(name=data['name'], description=data['description'], price=data['price'])
     db.session.add(new_product)
     db.session.commit()
     return {"message": f"product {new_product.name} has been created successfully."}
-    # else:
-    # return {"error": "The request payload is not in JSON format"}
+
+
+@app.route('/products/<int:product_id>', methods=['GET'])
+def get_product(product_id):
+    product = Product.query.filter_by(id=product_id).one()
+    result = {'id': product.id}
+    return {'product': result}
+
+
+@app.route('/products/<int:id>', methods=['PUT'])
+def update_product(product_id):
+    product = Product.querry.get_or_404(product_id)
+    data = request.get_jason()
+    product.name = data['name']
+    product.description = data['description']
+    product.price = data['price']
+    db.session.add(product)
+    db.session.commit()
+    return {"message": f"product {product.name} successfully updated"}
+
+
+@app.route('/products/<product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    product = Product.querry.get_or_404(product_id)
+    db.session.delete(product)
+    db.session.commit()
+    return {"message": f"product {product.name} successfully deleted"}
 
 
 if __name__ == '__main__':
