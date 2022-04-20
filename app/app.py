@@ -31,6 +31,7 @@ def get_products_list():
     products = Product.query.all()
     results = [
         {
+            'id': product.id,
             'name': product.name,
             'description': product.description,
             'price': product.price
@@ -50,26 +51,32 @@ def post_product():
 
 @app.route('/products/<int:product_id>', methods=['GET'])
 def get_product(product_id):
-    product = Product.query.filter_by(id=product_id).one()
-    result = {'id': product.id}
+    # product = Product.query.filter_by(id=product_id).one()
+    product = Product.query.get_or_404(product_id)
+    result = {'id': product.id,
+              'name': product.name,
+              'description': product.description,
+              'price': product.price
+              }
     return {'product': result}
 
 
-@app.route('/products/<int:id>', methods=['PUT'])
+@app.route('/products/<int:product_id>', methods=['PUT'])
 def update_product(product_id):
-    product = Product.querry.get_or_404(product_id)
-    data = request.get_jason()
-    product.name = data['name']
-    product.description = data['description']
-    product.price = data['price']
+    data = request.get_json()
+    # product = Product.query.filter_by(id=product_id).one()
+    product = Product.query.get_or_404(product_id)
+    product.name = data.get('name', product.name)
+    product.description = data.get('description', product.description)
+    product.price = data.get('price', product.price)
     db.session.add(product)
     db.session.commit()
-    return {"message": f"product {product.name} successfully updated"}
+    return {"message": f"product id: {product.id} successfully updated"}
 
 
-@app.route('/products/<product_id>', methods=['DELETE'])
+@app.route('/products/<int:product_id>', methods=['DELETE'])
 def delete_product(product_id):
-    product = Product.querry.get_or_404(product_id)
+    product = Product.query.get_or_404(product_id)
     db.session.delete(product)
     db.session.commit()
     return {"message": f"product {product.name} successfully deleted"}
